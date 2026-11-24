@@ -1,0 +1,231 @@
+PSEUDOCODE FOR main.py
+======================
+
+CONSTANTS
+    ORDERS_FILE = "orders.txt"
+    COMPLETED_FILE = "completed_services.txt"
+    SEPARATOR = "|"
+
+
+FUNCTION load_file(filename)
+    SET data = empty list
+    TRY
+        OPEN file for reading
+        FOR each line in the file
+            IF line is not blank
+                SPLIT line using SEPARATOR
+                ADD the parts to data
+        CLOSE file
+    IF file is not found
+        CREATE an empty file
+    RETURN data
+END FUNCTION
+
+
+FUNCTION save_file(filename, data)
+    TRY
+        OPEN file for writing
+        FOR each row in data
+            JOIN the row using SEPARATOR
+            WRITE the row to the file
+        CLOSE file
+    IF any error occurs
+        DISPLAY "Error saving file."
+END FUNCTION
+
+
+FUNCTION valid_date(date)
+    IF length of date is not 10
+        RETURN false
+    IF character 4 or character 7 is not "-"
+        RETURN false
+    SET year = first 4 characters
+    SET month = characters 5 to 6
+    SET day = characters 8 to 9
+    IF year, month or day is not a number
+        RETURN false
+    IF month is less than 1 OR month is more than 12
+        RETURN false
+    IF day is less than 1 OR day is more than 31
+        RETURN false
+    RETURN true
+END FUNCTION
+
+
+FUNCTION record_completed()
+    LOAD orders
+    LOAD completed services
+    DISPLAY "Enter Order ID"
+    INPUT orderID
+
+    FOR each completed service
+        IF service belongs to orderID
+            DISPLAY "Error: Service already recorded for this order."
+            RETURN
+
+    FOR each order
+        IF order ID matches orderID AND status is not "Cancelled" or "Collected"
+            DISPLAY "Completion Date (YYYY-MM-DD)"
+            INPUT date
+            IF date is not valid
+                DISPLAY "Error: Invalid date format."
+                RETURN
+
+            IF completed services list is empty
+                SET new Service ID = "SVC1001"
+            ELSE
+                SET new Service ID = last Service ID number + 1
+
+            ADD [new Service ID, orderID, Service, Weight, date] to completed services
+            SET order status = "Ready for Collection"
+            SET collection status = "Ready"
+            SAVE completed services
+            SAVE orders
+            DISPLAY "Recorded as [new Service ID] - Order marked Ready for Collection."
+            RETURN
+
+    DISPLAY "Error: Valid active Order ID not found."
+END FUNCTION
+
+
+FUNCTION view_workload()
+    LOAD orders
+    SET pending = 0
+    SET washing = 0
+    SET drying = 0
+
+    DISPLAY table header
+    FOR each order
+        IF status is "Pending"
+            DISPLAY order details
+            ADD 1 to pending
+        ELSE IF status is "Washing"
+            DISPLAY order details
+            ADD 1 to washing
+        ELSE IF status is "Drying"
+            DISPLAY order details
+            ADD 1 to drying
+
+    SET total = pending + washing + drying
+    DISPLAY pending, washing, drying and total counts
+END FUNCTION
+
+
+FUNCTION update_status()
+    LOAD orders
+    DISPLAY "Enter Order ID"
+    INPUT orderID
+
+    FOR each order
+        IF order ID matches orderID AND status is not "Cancelled" or "Collected"
+            DISPLAY current status
+            DISPLAY status choices
+            DISPLAY "New status (1-3)"
+            INPUT choice
+
+            IF choice is 1
+                SET status = "Washing"
+                SET collection status = "Uncollected"
+            ELSE IF choice is 2
+                SET status = "Drying"
+                SET collection status = "Uncollected"
+            ELSE IF choice is 3
+                SET status = "Ready for Collection"
+                SET collection status = "Ready"
+            ELSE
+                DISPLAY "Error: Invalid choice."
+                RETURN
+
+            SAVE orders
+            DISPLAY "Updated Order [orderID] to [status]"
+            RETURN
+
+    DISPLAY "Error: Valid Order ID not found."
+END FUNCTION
+
+
+FUNCTION delete_entry()
+    LOAD completed services
+
+    IF completed services list is empty
+        DISPLAY "No completed service entries found."
+        RETURN
+
+    DISPLAY all completed service entries
+    DISPLAY "Enter Service ID to delete"
+    INPUT serviceID
+
+    FOR each completed service
+        IF Service ID matches serviceID
+            DISPLAY "Confirm delete? (YES/NO)"
+            INPUT answer
+            IF answer is "YES"
+                REMOVE the service from the list
+                SAVE completed services
+                DISPLAY "Deleted [serviceID]"
+            ELSE
+                DISPLAY "Deletion cancelled."
+            RETURN
+
+    DISPLAY "Error: Service ID not found."
+END FUNCTION
+
+
+FUNCTION daily_report()
+    DISPLAY "Report Date (YYYY-MM-DD)"
+    INPUT date
+    IF date is not valid
+        DISPLAY "Error: Invalid date format."
+        RETURN
+
+    LOAD orders
+    LOAD completed services
+    DISPLAY date
+
+    DISPLAY "Completed Services" section
+    SET completedCount = 0
+    SET totalWeight = 0
+    FOR each completed service
+        IF service date matches date
+            DISPLAY service details
+            ADD 1 to completedCount
+            ADD weight to totalWeight
+    DISPLAY completedCount and totalWeight
+
+    DISPLAY "Remaining Active Workload" section
+    SET activeCount = 0
+    FOR each order
+        IF order date matches date AND status is "Pending", "Washing" or "Drying"
+            DISPLAY order details
+            ADD 1 to activeCount
+    DISPLAY activeCount
+END FUNCTION
+
+
+FUNCTION staff_menu()
+    REPEAT forever
+        DISPLAY menu options
+        DISPLAY "Choice (0-5)"
+        INPUT choice
+
+        IF choice is 1
+            CALL record_completed()
+        ELSE IF choice is 2
+            CALL view_workload()
+        ELSE IF choice is 3
+            CALL update_status()
+        ELSE IF choice is 4
+            CALL delete_entry()
+        ELSE IF choice is 5
+            CALL daily_report()
+        ELSE IF choice is 0
+            STOP
+        ELSE
+            DISPLAY "Invalid choice."
+    END REPEAT
+END FUNCTION
+
+
+START
+    CALL staff_menu()
+END
