@@ -1,0 +1,3 @@
+ORD001|CUST01|Wash & Dry|5.5|27.50|Drying|Paid|Uncollected|2026-05-12
+ORD002|CUST02|Ironing|2.0|10.00|Washing|Unpaid|Uncollected|2026-05-12
+ORD003|CUST03|Express Wash|4.0|32.00|Drying|Paid|Uncollected|2026-05-12
